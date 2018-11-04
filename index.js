@@ -23,7 +23,7 @@ const server = http.createServer((req, res) => {
   req.on('end', () => {
     payload += decoder.end();
     const reqData = {
-      payload: JSON.parse(payload),
+      payload: payload ? JSON.parse(payload): {},
       method,
       trimmedPath,
       trimmedPathname,
@@ -46,6 +46,8 @@ const router = {
         return handlers.ping;
       case 'users':
         return handlers.createUser;
+      case 'users/edit':
+        return handlers.editUser;
       default:
         return handlers.notFound;
     }
