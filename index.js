@@ -1,12 +1,10 @@
 const http = require('http');
 const url = require('url');
 const { StringDecoder } = require('string_decoder');
-const handler = require('./handler');
-
+const handlers = require('./handlers');
 
 const server = http.createServer((req, res) => {
   // Get request URL info
-  // @TODO: Make this parsing more efficient to be able to handle some thing like /path1//path2///path3
   const { path, pathname, query } = url.parse(req.url, true);
   const trimmedPathname = pathname.replace(/(^\/+)|(\/+$)/g, ''); 
   const trimmedPath = path.replace(/(^\/+)|(\/+$)/g, ''); 
@@ -25,13 +23,13 @@ const server = http.createServer((req, res) => {
   req.on('end', () => {
     payload += decoder.end();
     const reqData = {
-      payload,
+      payload: JSON.parse(payload),
       method,
       trimmedPath,
       trimmedPathname,
     };
 
-    const choosenHandler = router[method] ? router[method](trimmedPathname) : handler.notFound;
+    const choosenHandler = router[method] ? router[method](trimmedPathname) : handlers.notFound;
     choosenHandler(reqData, (statusCode=200, data={}) => {
       res.setHeader('Content-Type', 'application/json');
       res.writeHead(statusCode);
@@ -45,9 +43,11 @@ const router = {
   post: (route) => {
     switch(route) {
       case 'ping':
-        return handler.ping;
+        return handlers.ping;
+      case 'users':
+        return handlers.createUser;
       default:
-        return handler.notFound;
+        return handlers.notFound;
     }
   }
 }
