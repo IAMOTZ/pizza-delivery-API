@@ -48,6 +48,14 @@ helpers.validateUpdateUserInfo =(userInfo) => {
   }
 }
 
+helpers.validateDeleteUserInfo = (userInfo) => {
+  const { email, password } = userInfo;  
+  if (typeof (email) !== 'string' || typeof (password) !== 'string') {
+    return { success: false, message: 'All fields must be string' };
+  } 
+  return { success: true };
+}
+
 helpers.hash = (str) => {
   if(typeof(str) === 'string') {
     const hashedStr = crypto.createHmac('sha256', 'myLittleDirtySecrete').update(str).digest('hex');

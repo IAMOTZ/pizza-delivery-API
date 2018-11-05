@@ -29,6 +29,7 @@ userHandler.createUser = (reqData, callBack) => {
   });
 };
 
+// @TODO: This route needs to be protected.
 userHandler.editUser = (reqData, callBack) => {
   const { name, email, streetAddress, password } = reqData.payload;
   const userInfo = { name, email, streetAddress, password };
@@ -54,6 +55,30 @@ userHandler.editUser = (reqData, callBack) => {
           callBack(200, { 'message': 'User info successfully updated' });
         } else {
           callBack(500, { 'Error': 'Unable to update user info' });
+        }
+      });
+    } else {
+      callBack(404, { 'Error': 'User not found' });
+    }
+  });
+}
+
+// @TODO: This route needs to be protected.
+userHandler.deleteUser = (reqData, callBack) => {
+  const { email, password } = reqData.payload;
+  const { success, message } = helpers.validateDeleteUserInfo({ email, password });
+  if (!success) {
+    return callBack(400, { message });
+  }
+
+  const emailAsFileName = email.replace(/\.(.+)$/, '');
+  data.read('users', emailAsFileName, (err, userData) => {
+    if (!err && userData) {
+      data.delete('users', emailAsFileName, (err) => {
+        if (!err) {
+          callBack(200, { 'message': 'User deleted' });
+        } else {
+          callBack(500, { 'message': 'Unable to delete user' });
         }
       });
     } else {

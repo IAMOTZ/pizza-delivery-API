@@ -6,8 +6,8 @@ const handlers = require('./handlers');
 const server = http.createServer((req, res) => {
   // Get request URL info
   const { path, pathname, query } = url.parse(req.url, true);
-  const trimmedPathname = pathname.replace(/(^\/+)|(\/+$)/g, ''); 
-  const trimmedPath = path.replace(/(^\/+)|(\/+$)/g, ''); 
+  const trimmedPathname = pathname.replace(/(^\/+)|(\/+$)/g, '');
+  const trimmedPath = path.replace(/(^\/+)|(\/+$)/g, '');
 
   // Get the request method
   const method = req.method.toLowerCase();
@@ -23,14 +23,14 @@ const server = http.createServer((req, res) => {
   req.on('end', () => {
     payload += decoder.end();
     const reqData = {
-      payload: payload ? JSON.parse(payload): {},
+      payload: payload ? JSON.parse(payload) : {},
       method,
       trimmedPath,
       trimmedPathname,
     };
 
     const choosenHandler = router[method] ? router[method](trimmedPathname) : handlers.notFound;
-    choosenHandler(reqData, (statusCode=200, data={}) => {
+    choosenHandler(reqData, (statusCode = 200, data = {}) => {
       res.setHeader('Content-Type', 'application/json');
       res.writeHead(statusCode);
       res.end(JSON.stringify(data));
@@ -41,13 +41,21 @@ const server = http.createServer((req, res) => {
 
 const router = {
   post: (route) => {
-    switch(route) {
+    switch (route) {
       case 'ping':
         return handlers.ping;
       case 'users':
         return handlers.createUser;
       case 'users/edit':
         return handlers.editUser;
+      default:
+        return handlers.notFound;
+    }
+  },
+  delete: (route) => {
+    switch (route) {
+      case 'users/delete':
+        return handlers.deleteUser;
       default:
         return handlers.notFound;
     }
