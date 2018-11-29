@@ -27,6 +27,7 @@ const server = http.createServer((req, res) => {
       method,
       trimmedPath,
       trimmedPathname,
+      headers: req.headers,
     };
 
     const choosenHandler = router[method] ? router[method](trimmedPathname) : handlers.notFound;
@@ -48,6 +49,10 @@ const router = {
         return handlers.createUser;
       case 'users/edit':
         return handlers.editUser;
+      case 'login':
+        return handlers.login;
+      case 'logout':
+        return handlers.logout;
       default:
         return handlers.notFound;
     }

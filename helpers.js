@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const validator = require('./lib/validator');
+const data = require('./lib/data');
 
 const helpers = {};
 
@@ -20,11 +21,6 @@ helpers.validateUserInfo = (userInfo) => {
 
 helpers.validateUpdateUserInfo =(userInfo) => {
   const { email, name, streetAddress, password } = userInfo;
-
-  // Validating email
-  if(!validator.isEmail(email)) {
-    return { success: false, message: 'Email is not valid. Email is required to update any field.'}
-  }
 
   // Validating name
   if(name && !validator.minCharLength(name, 5)) {
@@ -56,12 +52,41 @@ helpers.validateDeleteUserInfo = (userInfo) => {
   return { success: true };
 }
 
+helpers.validateLoginInfo = (loginInfo) => {
+  const { email, password } = loginInfo;
+  if (typeof (email) !== 'string' || typeof (password) !== 'string' || !validator.isEmail(email)) {
+    return { success: false, message: 'Email or Password incorrect' };
+  } 
+  return { success: true };
+}
+
+helpers.validateToken = (token, callBack) => {
+  if (typeof (token) !== 'string') {
+    return callBack(true);
+  }
+  data.read('tokens', token, (err, tokenData) => {
+    if (err) {
+      return callBack(true);
+    }
+    return callBack(false, tokenData);
+  });
+}
+
 helpers.hash = (str) => {
   if(typeof(str) === 'string') {
     const hashedStr = crypto.createHmac('sha256', 'myLittleDirtySecrete').update(str).digest('hex');
     return hashedStr;
   }
   return false;
+}
+
+helpers.createRandomString = (length) => {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  let randomString = '';
+  for (let i = 0; i < length; i++) {
+    randomString += letters[Math.floor(Math.random() * 24)];
+  }
+  return randomString;
 }
 
 module.exports = helpers;
