@@ -3,6 +3,16 @@ const helpers = require('../helpers');
 
 const authHandler = {};
 
+/**
+ * @method login
+ * @memberof authHandler
+ * @desc A method to help handle user login.
+ * 
+ * @param {object} reqData The request data
+ * @param {function} callBack A callback to execute after the function is done.
+ * The callback should recieve the status code as the first argument and the 
+ * result of creating the user as second argument.
+ */
 authHandler.login = (reqData, callBack) => {
   const { email, password } = reqData.payload;
   const { success, message } = helpers.validateLoginInfo({ email, password });
@@ -29,6 +39,16 @@ authHandler.login = (reqData, callBack) => {
   });
 };
 
+/**
+ * @method logout
+ * @memberof authHandler
+ * @desc A method to help handle user logout.
+ * 
+ * @param {object} reqData The request data
+ * @param {function} callBack A callback to execute after the function is done.
+ * The callback should recieve the status code as the first argument and the 
+ * result of creating the user as second argument.
+ */
 authHandler.logout = (reqData, callBack) => {
   const { token } = reqData.payload;
   if (typeof (token) !== 'string') {

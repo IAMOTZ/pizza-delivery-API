@@ -4,6 +4,16 @@ const data = require('./lib/data');
 
 const helpers = {};
 
+/**
+ * @method validateUserInfo
+ * @memberof helpers
+ * @desc An helper function to help validate the details of a user to be created.
+ * 
+ * @param {object} userInfo The user info to validate.
+ * @returns {object} Returns an object.
+ * Returned object would always contain property "success" to tell if validation was successful.
+ * Returned object can sometimes contain property "message" to tell the reason why validation failed.
+ */
 helpers.validateUserInfo = (userInfo) => {
   const { name, email, streetAddress, password } = userInfo;
   if (
@@ -19,6 +29,16 @@ helpers.validateUserInfo = (userInfo) => {
   return { success: true };
 };
 
+/**
+ * @method validateUpdateUserInfo
+ * @memberof helpers
+ * @desc An helper function to help validate the details of a user to be edited.
+ * 
+ * @param {object} userInfo The user info to validate.
+ * @returns {object} Returns an object.
+ * Returned object would always contain property "success" to tell if validation was successful.
+ * Returned object can sometimes contain property "message" to tell the reason why validation failed.
+ */
 helpers.validateUpdateUserInfo = (userInfo) => {
   const { email, name, streetAddress, password } = userInfo;
 
@@ -44,6 +64,16 @@ helpers.validateUpdateUserInfo = (userInfo) => {
   }
 }
 
+/**
+ * @method validateDeleteUserInfo
+ * @memberof helpers
+ * @desc An helper function to help validate the details of a user to be deleted.
+ * 
+ * @param {object} userInfo The user info to validate.
+ * @returns {object} Returns an object.
+ * Returned object would always contain property "success" to tell if validation was successful.
+ * Returned object can sometimes contain property "message" to tell the reason why validation failed.
+ */
 helpers.validateDeleteUserInfo = (userInfo) => {
   const { email, password } = userInfo;
   if (typeof (email) !== 'string' || typeof (password) !== 'string') {
@@ -52,6 +82,16 @@ helpers.validateDeleteUserInfo = (userInfo) => {
   return { success: true };
 }
 
+/**
+ * @method validateLoginInfo
+ * @memberof helpers
+ * @desc An helper function to help validate the details of a user wanting to login.
+ * 
+ * @param {object} loginInfo The login details.
+ * @returns {object} Returns an object.
+ * Returned object would always contain property "success" to tell if validation was successful.
+ * Returned object can sometimes contain property "message" to tell the reason why validation failed.
+ */
 helpers.validateLoginInfo = (loginInfo) => {
   const { email, password } = loginInfo;
   if (typeof (email) !== 'string' || typeof (password) !== 'string' || !validator.isEmail(email)) {
@@ -60,6 +100,16 @@ helpers.validateLoginInfo = (loginInfo) => {
   return { success: true };
 }
 
+/**
+ * @method validateToken
+ * @memberof helpers
+ * @desc An helper function to help validate a token.
+ * 
+ * @param {string} token The token to validate.
+ * @param {function} callBack An err-first callback to execute when the validation is done.
+ * If validation is successful, callBack would get the data stored in token as second argument.
+ *
+ */
 helpers.validateToken = (token, callBack) => {
   if (typeof (token) !== 'string') {
     return callBack(true);
@@ -76,6 +126,15 @@ helpers.validateToken = (token, callBack) => {
   });
 }
 
+/**
+ * @method hash
+ * @memberof helpers
+ * @desc An helper function to help hash a string.
+ * 
+ * @param {string} str The string to be hashed.
+ * @returns {string} If hashing is successful, the hashed string would be returned.
+ * @return {false} If hashing fails, "false" would be returned.
+ */
 helpers.hash = (str) => {
   if (typeof (str) === 'string') {
     const hashedStr = crypto.createHmac('sha256', 'myLittleDirtySecrete').update(str).digest('hex');
@@ -84,6 +143,14 @@ helpers.hash = (str) => {
   return false;
 }
 
+/**
+ * @method createRandomString
+ * @memberof helpers
+ * @desc An helper function to help create a length of random strings.
+ * 
+ * @param {number} length The length of the random string to be created.
+ * @returns {string} The random string created.
+ */
 helpers.createRandomString = (length) => {
   const letters = 'abcdefghijklmnopqrstuvwxyz';
   let randomString = '';
