@@ -19,7 +19,8 @@ authHandler.login = (reqData, callBack) => {
       return callBack(400, { error: 'Email or password incorrect' });
     }
     const token = helpers.createRandomString(20);
-    data.create('tokens', token, { email }, (err) => {
+    const tokenInfo = { createdAt: new Date(), email }
+    data.create('tokens', token, tokenInfo, (err) => {
       if (err) {
         return callBack(500, { error: 'Unable to create token' });
       }
