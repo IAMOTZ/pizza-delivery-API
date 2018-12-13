@@ -50,7 +50,7 @@ authHandler.login = (reqData, callBack) => {
  * result of creating the user as second argument.
  */
 authHandler.logout = (reqData, callBack) => {
-  const { token } = reqData.payload || reqData.headers;
+  const token = reqData.payload.token || reqData.headers.token;
   if (typeof (token) !== 'string') {
     return callBack(400, { error: 'Token is not valid' });
   }

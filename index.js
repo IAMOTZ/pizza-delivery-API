@@ -41,6 +41,12 @@ const server = http.createServer((req, res) => {
 });
 
 const router = {
+  get: (route) => {
+    switch (route) {
+      case 'menuItems':
+        return handlers.getMenuItems;
+    }
+  },
   post: (route) => {
     switch (route) {
       case 'ping':

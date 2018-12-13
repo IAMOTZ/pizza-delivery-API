@@ -51,7 +51,7 @@ userHandler.createUser = (reqData, callBack) => {
  * result of creating the user as second argument.
  */
 userHandler.editUser = (reqData, callBack) => {
-  const { token } = reqData.payload || reqData.headers;
+  const token = reqData.payload.token || reqData.headers.token;
   helpers.validateToken(token, (err, tokenData) => {
     if (err) {
       return callBack(401, { error: 'Token is not valid' });
@@ -94,7 +94,7 @@ userHandler.editUser = (reqData, callBack) => {
  * result of creating the user as second argument.
  */
 userHandler.deleteUser = (reqData, callBack) => {
-  const { token } = reqData.payload || reqData.headers;
+  const token = reqData.payload.token || reqData.headers.token;
   helpers.validateToken(token, (err, tokenData) => {
     if (err) {
       return callBack(401, { error: 'Token is not valid' });
