@@ -30,7 +30,7 @@ const server = http.createServer((req, res) => {
       headers: req.headers,
     };
 
-    const choosenHandler = router[method] ? router[method](trimmedPathname) : handlers.notFound;
+    const choosenHandler = router[method] && router[method](trimmedPathname) ? router[method](trimmedPathname) : handlers.notFound;
     choosenHandler(reqData, (statusCode = 200, data = {}) => {
       res.setHeader('Content-Type', 'application/json');
       res.writeHead(statusCode);
@@ -47,22 +47,22 @@ const router = {
         return handlers.ping;
       case 'users':
         return handlers.createUser;
-      case 'users/edit':
-        return handlers.editUser;
       case 'login':
         return handlers.login;
       case 'logout':
         return handlers.logout;
-      default:
-        return handlers.notFound;
+    }
+  },
+  put: (route) => {
+    switch (route) {
+      case 'users':
+        return handlers.editUser;
     }
   },
   delete: (route) => {
     switch (route) {
       case 'users/delete':
         return handlers.deleteUser;
-      default:
-        return handlers.notFound;
     }
   }
 }

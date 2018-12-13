@@ -119,7 +119,7 @@ helpers.validateToken = (token, callBack) => {
       return callBack(true);
     }
     const timeDiff =  new Date().getTime() - new Date(tokenData.createdAt).getTime();
-    if (timeDiff > (6 * 60 * 60 * 1000)) {
+    if (timeDiff > (6 * 60 * 60 * 1000)) {  // Token expires in 6hours
       return callBack(true);
     }
     return callBack(false, tokenData);

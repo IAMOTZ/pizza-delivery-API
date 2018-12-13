@@ -25,15 +25,17 @@ userHandler.createUser = (reqData, callBack) => {
   const emailAsFileName = email.replace(/\.(.+)$/, '');
   data.read('users', emailAsFileName, (err, userData) => {
     if (userData) {
-      callBack(400, { error: 'A user with this email already exist' });
-    } else {
-      data.create('users', emailAsFileName, userInfo, (err) => {
-        if (!err) {
-          return callBack(201, { message: 'User successfully created' });
-        }
-        callBack(500, { error: 'Could not create a new user' });
-      });
+      return callBack(400, { error: 'A user with this email already exist' });
     }
+    data.create('users', emailAsFileName, userInfo, (err) => {
+      if (err) {
+        return callBack(500, { error: 'Could not create a new user' });
+      }
+      return callBack(201, {
+        message: 'User successfully created', user: { name, email, streetAddress }
+      });
+    });
+
   });
 };
 
@@ -69,10 +71,13 @@ userHandler.editUser = (reqData, callBack) => {
       userData.streetAddress = streetAddress || userData.streetAddress;
       userData.password = helpers.hash(password) || userData.password;
       data.update('users', emailAsFileName, userData, (err) => {
-        if(err) {
+        if (err) {
           return callBack(500, { error: 'Unable to update user info' });
         }
-        callBack(200, { message: 'User info successfully updated' });
+        return callBack(200, {
+          message: 'User info successfully updated',
+          user: { name: userData.name, email: userData.email, streetAddress: userData.streetAddress }
+        });
       });
     });
   });
@@ -96,12 +101,12 @@ userHandler.deleteUser = (reqData, callBack) => {
     }
     const emailAsFileName = tokenData.email.replace(/\.(.+)$/, '');
     data.read('users', emailAsFileName, (err, userData) => {
-      if(err) {
+      if (err) {
         return callBack(404, { error: 'User not found' });
       }
       data.delete('users', emailAsFileName, (err) => {
-        if(err) {
-          return callBack(500, { error: 'Unable to delete user' }); 
+        if (err) {
+          return callBack(500, { error: 'Unable to delete user' });
         }
         callBack(200, { message: 'User deleted' });
       });
