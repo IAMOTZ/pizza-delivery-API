@@ -57,6 +57,8 @@ const router = {
         return handlers.login;
       case 'logout':
         return handlers.logout;
+      case 'order':
+        return handlers.createOrder;
     }
   },
   put: (route) => {

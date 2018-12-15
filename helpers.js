@@ -1,6 +1,9 @@
 const crypto = require('crypto');
+const https = require('https');
+const queryString = require('querystring');
 const validator = require('./lib/validator');
 const data = require('./lib/data');
+const config = require('./config');
 
 const helpers = {};
 
@@ -118,7 +121,7 @@ helpers.validateToken = (token, callBack) => {
     if (err) {
       return callBack(true);
     }
-    const timeDiff =  new Date().getTime() - new Date(tokenData.createdAt).getTime();
+    const timeDiff = new Date().getTime() - new Date(tokenData.createdAt).getTime();
     if (timeDiff > (6 * 60 * 60 * 1000)) {  // Token expires in 6hours
       return callBack(true);
     }
@@ -137,7 +140,7 @@ helpers.validateToken = (token, callBack) => {
  */
 helpers.hash = (str) => {
   if (typeof (str) === 'string') {
-    const hashedStr = crypto.createHmac('sha256', 'myLittleDirtySecrete').update(str).digest('hex');
+    const hashedStr = crypto.createHmac('sha256', env.HASING_SECRET).update(str).digest('hex');
     return hashedStr;
   }
   return false;
@@ -158,6 +161,47 @@ helpers.createRandomString = (length) => {
     randomString += letters[Math.floor(Math.random() * 24)];
   }
   return randomString;
+}
+
+/**
+ * @method chargeCreditCard
+ * @memberof helpers
+ * @desc An helper function to help charge credit cards using Stripe.
+ *
+ * @param {string} cardToken A tokenised credit card details
+ * @param {function} callBack A call back function
+ */
+helpers.chargeCreditCard = (cardToken, amount, callBack) => {
+  const payload = {
+    amount: amount,
+    currency: 'usd',
+    source: cardToken,
+  };
+  const stringPayload = queryString.stringify(payload);
+  const requestDetails = {
+    protocol: 'https:',
+    hostname: 'api.stripe.com',
+    method: 'POST',
+    path: '/v1/charges',
+    auth: config.stripeApiSecret,
+  };
+
+  const req = https.request(requestDetails, (res) => {
+    const status = res.status;
+    if(res.statusCode === 200) {
+      return callBack(false);
+    }
+    let responseData = '';
+    res.on('data', (d) => {
+      responseData += d.toString();
+    });
+    res.on('end', () => callBack(responseData))
+  });
+  req.on('error', (e) => {
+    callBack(e);
+  });
+  req.write(stringPayload);
+  req.end();
 }
 
 module.exports = helpers;

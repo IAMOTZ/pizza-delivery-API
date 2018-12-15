@@ -1,32 +1,5 @@
 const helpers = require('../helpers');
-
-const menuItems = {
-  1: {
-    name: 'Jollof Rice',
-    quality: 'Medium',
-    price: '500',
-  },
-  2: {
-    name: 'Fried Rice',
-    quality: 'High',
-    price: '1000',
-  },
-  3: {
-    name: 'Eba',
-    quality: 'Medium',
-    price: '500',
-  },
-  4: {
-    name: 'Pounded Yam',
-    quality: 'High',
-    price: '1000',
-  },
-  5: {
-    name: 'Spaghtti',
-    quality: 'Low',
-    price: '200',
-  },
-};
+const menuItems = require('../lib/menuItems');
 
 const menuHandler = {};
 
@@ -37,6 +10,30 @@ menuHandler.getMenuItems = (reqData, callBack) => {
       return callBack(401, { error: 'Token is not valid' });
     }
     return callBack(200, { message: 'These are the menu items, enjoy!', menuItems });
+  });
+}
+
+menuHandler.createOrder = (reqData, callBack) => {  
+  const token = reqData.payload.token || reqData.headers.token;  
+  helpers.validateToken(token, (err, tokenData) => {
+    if (err) {
+      return callBack(401, { error: 'Token is not valid' });
+    }
+    let { items, cardToken } = reqData.payload;
+    cardToken = typeof cardToken !== 'string' ? 'tok_visa' : cardToken; 
+    const menuItemIds =  Object.keys(menuItems).map(Number);
+    if (!items || !items.length || !items.every(item => menuItemIds.includes(item))) {
+      return callBack(400, { error: 'Invalid item selection'});
+    }
+    const price = items.reduce((acc, curr) => acc + menuItems[curr].price, 0);
+    helpers.chargeCreditCard(cardToken, price, (err) => {
+      if(err) {
+        console.log(err);
+        return callBack(500, { error: 'Error charging credit card'});
+      }
+      // @TODO: I need to send mail here
+      return callBack(200, 'Order created!!');
+    });
   });
 }
 
