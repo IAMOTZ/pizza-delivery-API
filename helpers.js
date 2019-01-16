@@ -4,6 +4,7 @@ const queryString = require('querystring');
 const validator = require('./lib/validator');
 const data = require('./lib/data');
 const config = require('./config');
+const recipientTemplate = require('./lib/recieptTemplate');
 
 const helpers = {};
 
@@ -140,7 +141,7 @@ helpers.validateToken = (token, callBack) => {
  */
 helpers.hash = (str) => {
   if (typeof (str) === 'string') {
-    const hashedStr = crypto.createHmac('sha256', env.HASING_SECRET).update(str).digest('hex');
+    const hashedStr = crypto.createHmac('sha256', config.hashingSecret).update(str).digest('hex');
     return hashedStr;
   }
   return false;
@@ -161,6 +162,30 @@ helpers.createRandomString = (length) => {
     randomString += letters[Math.floor(Math.random() * 24)];
   }
   return randomString;
+}
+/**
+ * @method sendHTTPSRequest
+ * @memberof helpers
+ * @desc An helper function to help send HTTPS request
+ *
+ * @param {object} requestDetails The request details
+ * @param {object} payload The request payload
+ * @param {function} callBack A callback function
+ * @returns {void} Does not return anything
+ */
+helpers.sendHTTPSRequest = (requestDetails, payload, callBack) => {
+  const req = https.request(requestDetails, (res) => {
+    let responseData = '';
+    res.on('data', (d) => {
+      responseData += d.toString();
+    });
+    res.on('end', () => callBack(false, res.statusCode, responseData))
+  });
+  req.write(payload);
+  req.on('error', (e) => {
+    callBack(e);
+  });
+  req.end();
 }
 
 /**
@@ -185,23 +210,52 @@ helpers.chargeCreditCard = (cardToken, amount, callBack) => {
     path: '/v1/charges',
     auth: config.stripeApiSecret,
   };
-
-  const req = https.request(requestDetails, (res) => {
-    const status = res.status;
-    if(res.statusCode === 200) {
-      return callBack(false);
+  helpers.sendHTTPSRequest(requestDetails, stringPayload, (httpsErr, statusCode, data) => {
+    if(httpsErr) return callBack(httpsErr, data);
+    if(statusCode == 200) {
+      return callBack(false, data);
     }
-    let responseData = '';
-    res.on('data', (d) => {
-      responseData += d.toString();
-    });
-    res.on('end', () => callBack(responseData))
   });
-  req.on('error', (e) => {
-    callBack(e);
+}
+
+/**
+ * @method sendReceipt
+ * @memberof helpers
+ * @desc An helper function to help send pizza order receipt
+ * 
+ * @param {string} recipient The email of the recipient of the reciept
+ * @param {object} order The pizza order created by the recipient
+ * @param {string} order.items The item(s) ordered by the recipient
+ * @param {string} order.price The total price of the order created by the recipient
+ * @param {function} callBack A callback function
+ */
+helpers.sendReceipt = (recipient, order, callBack) => {
+  const payload = {
+    from: 'Pizza Delivery <no-reply@sandbox8269caf78e794f69bb92bedf3b9a07b8.mailgun.org>',
+    to: recipient,
+    subject: 'Pizza Order Receipt',
+    html: recipientTemplate(order),
+  };
+  const stringPayload = queryString.stringify(payload);
+  const requestDetails = {
+    protocol: 'https:',
+    hostname: 'api.mailgun.net',
+    method: 'POST',
+    path: `/v3/${config.mailGunDomain}/messages`,
+    headers: {
+      Authorization: `Bearer ${Buffer.from(`api:${config.mailGunApiKey}`).toString('base64')}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  };
+  helpers.sendHTTPSRequest(requestDetails, stringPayload, (httpsErr, statusCode, data) => {
+    if(httpsErr) return callBack(httpsErr, data);
+    if(statusCode == 200) {
+      return callBack(false, data);
+    } else {
+      return callBack(data)
+    }
+
   });
-  req.write(stringPayload);
-  req.end();
 }
 
 module.exports = helpers;

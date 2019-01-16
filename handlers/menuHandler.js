@@ -26,13 +26,16 @@ menuHandler.createOrder = (reqData, callBack) => {
       return callBack(400, { error: 'Invalid item selection'});
     }
     const price = items.reduce((acc, curr) => acc + menuItems[curr].price, 0);
-    helpers.chargeCreditCard(cardToken, price, (err) => {
-      if(err) {
-        console.log(err);
+    helpers.chargeCreditCard(cardToken, price, (stripeErr) => {
+      if(stripeErr) {
         return callBack(500, { error: 'Error charging credit card'});
       }
-      // @TODO: I need to send mail here
-      return callBack(200, 'Order created!!');
+      helpers.sendReceipt(tokenData.email, {items, price}, (mailErrr) => {
+        if(mailErrr) {
+          return callBack(500, { error: 'Error sending delivery mail'});
+        }
+        return callBack(200, 'Order created!!')
+      })
     });
   });
 }
